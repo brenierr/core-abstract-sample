@@ -467,8 +467,24 @@ NB: StockController only works with version 3.
 It has no meaning in version 1 or 2 since it uses an incompatible response for shoes.
 
 core-shop works with an embedded database (will be reset after each startup).
+If you want to persist the data you can store it in a file by adding :
+```properties
+spring.datasource.url=jdbc:h2:file:/data/sampledata
+```
+
 Dependencies to this embedded database is only available for core-shop.
 See more on core-shop on his own README.md
+
+## Monitoring
+
+To monitor your application, spring actuator is configured. 
+To see available endpoints look at
+
+```url
+http://localhost:8080/actuator
+```
+
+For more information, see [Spring doc](https://docs.spring.io/spring-boot/docs/current/reference/html/actuator.html) 
 
 # Conclusion
 
