@@ -46,10 +46,19 @@ This core implementation uses :
 
 ## Tests
 
+You can run all tests running command 
+```shell script
+mvn clean test
+```
+
 To demonstrate how module works, we create a "fake" spring boot application and use an empty database.
 See tests `com.example.demo.core.service.StockShopCoreIntegrationTest` and `com.example.demo.core.service.ShoeShopCoreIntegrationTest` which demonstrate how application behave on specific cases.
 
 ## Improvements
 
-To go further, we might need to split model, and historize shoe stock change (store quantity delta
+To go further:
+- we might need to split model, and historize shoe stock change (store quantity delta
 instead of final quantity in the shop).
+- you can put the core-shop module in a git submodule if necessary
+- if shoe stock model grow, might be needed to split read and write model (use projections?)
+- add security to API

@@ -355,7 +355,7 @@ http://localhost:8080/swagger-ui/index.html
 ```
 There is a definition of each DTO and the valid properties.
 Example:
-![Swagger-bean](swagger-validation.png)
+![Swagger validation bean](swagger-validation.png?raw=true)
 
 ## Version 1
 
@@ -466,6 +466,8 @@ curl -X 'PATCH' \
 NB: StockController only works with version 3.
 It has no meaning in version 1 or 2 since it uses an incompatible response for shoes.
 
+core-shop works with an embedded database (will be reset after each startup).
+Dependencies to this embedded database is only available for core-shop.
 See more on core-shop on his own README.md
 
 # Conclusion
