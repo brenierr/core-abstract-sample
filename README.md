@@ -3,17 +3,19 @@
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
 
 - [Explanations](#explanations)
-  - [Notes](#notes)
-  - [What are we talking about](#what-are-we-talking-about)
-  - [How we address the issue](#how-we-address-the-issue)
-  - [Make DTOs the basis of your application](#make-dtos-the-basis-of-your-application)
-  - [Make your controller agnostic of the core](#make-your-controller-agnostic-of-the-core)
-    - [Core abstraction](#core-abstraction)
-    - [Implementing your core](#implementing-your-core)
-  - [Versioning APIs](#versioning-apis)
+    * [Notes](#notes)
+    * [What are we talking about](#what-are-we-talking-about)
+    * [How we address the issue](#how-we-address-the-issue)
+    * [Make DTOs the basis of your application](#make-dtos-the-basis-of-your-application)
+    * [Make your controller agnostic of the core](#make-your-controller-agnostic-of-the-core)
+        + [Core abstraction](#core-abstraction)
+        + [Implementing your core](#implementing-your-core)
+    * [Versioning APIs](#versioning-apis)
 - [Validating the application](#validating-the-application)
-  - [Version 1](#version-1)
-  - [Version 2](#version-2)
+    * [Version 1](#version-1)
+    * [Version 2](#version-2)
+    * [Version 3](#version-3)
+- [Conclusion](#conclusion)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -347,6 +349,14 @@ mvn clean package && \
   java -jar controller/target/controller-1.0.jar
 ```
 
+You can see and call REST API methods easily at
+```url
+http://localhost:8080/swagger-ui/index.html
+```
+There is a definition of each DTO and the valid properties.
+Example:
+![Swagger validation bean](swagger-validation.png?raw=true)
+
 ## Version 1
 
 To test version 1, you can call:
@@ -375,8 +385,109 @@ which should answer (see `com.example.demo.core.ShoeCoreNew.search`):
 {"shoes":[{"name":"New shoe","size":2,"color":"BLACK"}]}
 ```
 
+## Version 3
+
+To test version 3, you can call:
+
+```shell script
+curl -X GET "http://localhost:8080/shoes/search" -H "version: 3"
+```
+
+which should answer (see `com.example.demo.core.ShoeCore.search`):
+
+```json
+{"shoes":[{"name":"Kalenji runners","size":41,"color":"BLACK"},{"name":"Kalenji runners","size":42,"color":"BLUE"},{"name":"Newfeel runners","size":39,"color":"BLUE"}]}
+```
+
+```shell script
+curl -X GET "http://localhost:8080/stock" -H "version: 3"
+```
+
+which should answer (see `com.example.demo.core.StockCore.getShopStock`):
+
+```json
+{"state":"SOME","shoes":[{"size":41,"color":"BLACK","quantity":0},{"size":42,"color":"BLUE","quantity":1},{"size":39,"color":"BLUE","quantity":1}]}
+```
+
+```shell script
+curl -X 'PATCH' \
+  'http://localhost:8080/stock' \
+  -H 'version: 3' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "shoe": {
+    "name": "NEW DECATHLON SHOE",
+    "size": 45,
+    "color": "BLACK"
+  },
+  "quantity": 2
+}'
+```
+
+which should answer (see `com.example.demo.core.StockCore.shoeStockChange`):
+
+```text
+Shoe [ShoeStockChange(shoe=ShoeKey(name=NEW DECATHLON SHOE, size=45, color=BLACK), quantity=2)] updated successfully.
+```
+
+You may also login onto in-memory database to see the data, go to:
+```url
+http://localhost:8080/h2-console
+```
+with properties:
+
+```properties
+spring.datasource.url=jdbc:h2:mem:testdb
+spring.datasource.driverClassName=org.h2.Driver
+spring.datasource.username=sa
+spring.datasource.password=password
+```
+
+If you try to update shop stock with more than 30 shoe boxes, you will get an error :
+```shell script
+curl -X 'PATCH' \
+  'http://localhost:8080/stock' \
+  -H 'version: 3' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "shoe": {
+    "name": "NEW DECATHLON SHOE",
+    "size": 45,
+    "color": "BLACK"
+  },
+  "quantity": 29
+}'
+```
+
+```json
+{"status":500,"error":"Internal Server Error","message":"Stock is full : try to store [31] shoe boxes when maximum allowed is [30]","path":"/stock"}
+```
+
+NB: StockController only works with version 3.
+It has no meaning in version 1 or 2 since it uses an incompatible response for shoes.
+
+core-shop works with an embedded database (will be reset after each startup).
+If you want to persist the data you can store it in a file by adding :
+```properties
+spring.datasource.url=jdbc:h2:file:/data/sampledata
+```
+
+Dependencies to this embedded database is only available for core-shop.
+See more on core-shop on his own README.md
+
+## Monitoring
+
+To monitor your application, spring actuator is configured. 
+To see available endpoints look at
+
+```url
+http://localhost:8080/actuator
+```
+
+For more information, see [Spring doc](https://docs.spring.io/spring-boot/docs/current/reference/html/actuator.html) 
+
 # Conclusion
 
-We can see that both result are structurally identical, while the code is obviously different.
+We can see that 3 results are structurally identical, while the code is obviously different.
 
 This is indeed useful, since we can use almost any paradigm, segregate our code versions and eventually just drop one when implementation becomes unused and/or deprecated.

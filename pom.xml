@@ -11,6 +11,7 @@
     <module>core</module>
     <module>core-legacy</module>
     <module>core-new</module>
+    <module>core-shop</module>
   </modules>
 
   <parent>
@@ -66,6 +67,10 @@
           <artifactId>junit-vintage-engine</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-validation</artifactId>
     </dependency>
   </dependencies>
 
